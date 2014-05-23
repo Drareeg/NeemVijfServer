@@ -3,11 +3,13 @@ import tornado.web
 import tornado.websocket
 import game
 import json
-from time import sleep
-
+import Encoder
+import random
 #import pdb;pdb.set_trace()
 
 clients = []
+rooms = {}
+
 
 #stuurt message naar alle connected clients
 def broadcast(message):
@@ -19,36 +21,28 @@ def send(client, message):
     client.write_message(message)
 
 
-#
-# def sendConnectedClientIPs(client):
-#     print("send start")
-#     clientNames = []
-#     i = 0
-#     while (i < clients.__len__()):
-#         clientNames.append(clients[i].request.remote_ip)
-#         i += 1
-#     client.write_message(json.dumps(clientNames))
-#     print("send end")
-
-def handleMessage(originClient, message):
+def handlemessage(originclient, message):
     splat = message.split(" ");
-    if(splat[0] == "CREATEROOM"):
-        newplayer = game.WebPlayer()
-        newplayer.naam = splat[1]
+    if splat[0] == "CREATEROOM":
+        room = game.Room(random.randint(1, 1))  #logica achter het gekozen id steken
+        rooms[room.id] = room
+    if splat[0] == "GETROOMS":
+        send(originclient, json.dumps(rooms, cls=Encoder.CustomEncoder, indent=2))
+    if splat[0] == "JOINROOM":  #JOINROOM roomid playername
+        room = rooms.get(int(splat[1])) #handle null
+        if room.join(game.WebPlayer(splat[2])):
+            send(originclient, "you joined room ")
 
 
-
-
-#als een speler de server joint wordt hij geadd aan lijst van clients.
-class JoinHandler(tornado.websocket.WebSocketHandler):
+class MessageHandler(tornado.websocket.WebSocketHandler):
     def open(self, *args):
         print("someone connected")
-        clients.append(self) # we appenden de client niet. we laten ze pas toevoegen als z
+        clients.append(self)
 
 
     def on_message(self, message):
-        print("received" + message)
-        handleMessage(self, message)
+        print("received " + message)
+        handlemessage(self, message)
 
 
     def on_close(self):
@@ -56,7 +50,9 @@ class JoinHandler(tornado.websocket.WebSocketHandler):
         clients.remove(self)
 
 
-app = tornado.web.Application([(r'/', JoinHandler)])
+app = tornado.web.Application([(r'/', MessageHandler)])
 
-app.listen(8888)
+app.listen(8889)
 tornado.ioloop.IOLoop.instance().start()
+
+
