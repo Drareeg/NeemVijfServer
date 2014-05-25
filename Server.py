@@ -29,7 +29,7 @@ def handlemessage(originclient, message):
     if splat[0] == "GETROOMS":
         send(originclient, json.dumps(rooms, cls=Encoder.CustomEncoder, indent=2))
     if splat[0] == "JOINROOM":  #JOINROOM roomid playername
-        room = rooms.get(int(splat[1])) #handle null
+        room = rooms.get(int(splat[1]))  #handle null
         if room.join(game.WebPlayer(splat[2])):
             send(originclient, "you joined room ")
 
