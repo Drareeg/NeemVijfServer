@@ -1,5 +1,6 @@
 __author__ = 'Drareeg'
 import json
+import logging
 
 
 class Room:  #hehe he
@@ -8,12 +9,12 @@ class Room:  #hehe he
 
 
     def __init__(self, id):
-        print("room made")
+        logging.info("room made")
         self.id = id
 
 
     def join(self, player):
-        print("%s tries joining room" % player.name)
+        logging.info("%s tries joining room" % player.name)
         self.players.append(player)
         return 1  #if succes, currently always accepting players
 
@@ -31,3 +32,5 @@ class WebPlayer:
         return self.name
 
 
+
+logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)

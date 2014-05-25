@@ -5,11 +5,11 @@ import game
 import json
 import Encoder
 import random
+import logging
 #import pdb;pdb.set_trace()
 
 clients = []
 rooms = {}
-
 
 #stuurt message naar alle connected clients
 def broadcast(message):
@@ -36,20 +36,21 @@ def handlemessage(originclient, message):
 
 class MessageHandler(tornado.websocket.WebSocketHandler):
     def open(self, *args):
-        print("someone connected")
+        logging.info("someone connected")
         clients.append(self)
 
 
     def on_message(self, message):
-        print("received " + message)
+        logging.info("received " + message)
         handlemessage(self, message)
 
 
     def on_close(self):
-        print("someone closed")
+        logging.info("someone closed")
         clients.remove(self)
 
 
+logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 app = tornado.web.Application([(r'/', MessageHandler)])
 
 app.listen(8889)
